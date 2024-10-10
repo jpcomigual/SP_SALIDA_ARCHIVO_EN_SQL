@@ -1,0 +1,53 @@
+USE [DB_EN_USO]
+GO
+/****** Object:  StoredProcedure [dbo].[SP_SALIDA_ARCHIVO_TXT]   Script Date: DD-MM-YYYY H:MM:SS ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:	<NN>
+-- Create date: <DD-MM-YYYY>
+-- Description:	<STORED PROCEDURE PARA SALIDA TXT DE DATOS>
+-- EXEC [dbo].[SP_SALIDA_ARCHIVO_TXT]  -- Ejecutar el procedimiento
+-- =============================================
+ 
+CREATE PROCEDURE [dbo].[SP_SALIDA_ARCHIVO_TXT]  -- Luego de crear el SP, se debe cambiar 'CREATE PROCEDURE' por 'ALTER PROCEDURE'
+ 
+AS
+SET NOCOUNT ON
+BEGIN TRANSACTION 
+BEGIN TRY
+ 
+ 
+			DECLARE @SQLString nvarchar(4000)
+			DECLARE @FECHA varchar(50) = (SELECT REPLACE(CONVERT(VARCHAR,CONVERT(DATE,GETDATE())),'-',''))
+			DECLARE @HORA varchar(50)  = (SELECT SUBSTRING(REPLACE(CONVERT(VARCHAR,CONVERT(TIME,GETDATE())),':',''),1,4))
+ 
+			DECLARE @NOMBRE_ARCHIVO varchar(50) = 'NOMBRE_DEL_ARCHIVO_TXT'+@FECHA+'.txt'
+ 
+
+SET @SQLString = 'bcp   "[DB_EN_USO].[dbo].[SP_ORIGEN_DE_DATOS]" queryout "\\DATA_BASE_CONECTADA\CARPETA_DESTINO\'+@NOMBRE_ARCHIVO+'" -c -t; -T -S DATA_BASE_CONECTADA'	
+EXEC xp_cmdshell  @SQLString
+ 
+COMMIT TRANSACTION
+END TRY 
+BEGIN CATCH
+    SELECT  
+        ERROR_NUMBER() AS ErrorNumber 
+        ,ERROR_SEVERITY() AS ErrorSeverity 
+        ,ERROR_STATE() AS ErrorState 
+        ,ERROR_PROCEDURE() AS ErrorProcedure 
+        ,ERROR_LINE() AS ErrorLine 
+        ,ERROR_MESSAGE() AS ErrorMessage; 
+    IF @@TRANCOUNT > 0 
+       BEGIN
+        ROLLBACK TRANSACTION 
+        return 1   
+       END
+     else
+       begin
+         return 0 
+       end  
+END CATCH
+tiene menú contextual
