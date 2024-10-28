@@ -50,4 +50,3 @@ BEGIN CATCH
          return 0 
        end  
 END CATCH
-tiene menú contextual
